@@ -50,7 +50,7 @@ def create_app(test_config=None):
     @app.route('/humidity')
     def humidityValues():
         humidityList = []
-        tables = query_api.query('from(bucket:"Database") |> range(start: -200m)')
+        tables = query_api.query('from(bucket:"Database") |> range(start: -300m)')
         for table in tables:
             for row in table.records:
                 if str(row.values['_measurement']) == "humidity":
@@ -63,13 +63,79 @@ def create_app(test_config=None):
                 value_list.append(list['_value'])
                 time_list.append(list['_time'])
             zip_list = zip(value_list, time_list)
+            dictionary = [{'x' : str(value), 'y' : str(time)} for time,value in zip_list]
+            couples = {'id':'humidity', 'color':'hsl(130, 70%, 50%)', 'data' : dictionary}
+            result = json.dumps(couples)
+            print(result)
+        return json.dumps(couples)
+
+    @app.route('/wind')
+    def windValues():
+        windList = []
+        tables = query_api.query('from(bucket:"Database") |> range(start: -200m)')
+        for table in tables:
+            for row in table.records:
+                if str(row.values['_measurement']) == "wind":
+                    windList.append(row.values)
+        result = ''
+        if windList.__len__() != 0:
+            value_list = []
+            time_list = []
+            for list in windList:
+                value_list.append(list['_value'])
+                time_list.append(list['_time'])
+            zip_list = zip(value_list, time_list)
             dictionary = str(dict([(str(time), str(value)) for time, value in zip_list]))
-            couples = [['id', 'humidity'],
+            couples = [['id', 'wind'],
+                       ['color', 'hsl(130, 70%, 50%)'],
+                       ['data', dictionary]]
+            result = jsons.dumps(couples)
+        return result
+
+    @app.route('/sunlight')
+    def sunlightValues():
+        windList = []
+        tables = query_api.query('from(bucket:"Database") |> range(start: -200m)')
+        for table in tables:
+            for row in table.records:
+                if str(row.values['_measurement']) == "sunlight":
+                    sunlightList.append(row.values)
+        result = ''
+        if sunlightList.__len__() != 0:
+            value_list = []
+            time_list = []
+            for list in sunlightList:
+                value_list.append(list['_value'])
+                time_list.append(list['_time'])
+            zip_list = zip(value_list, time_list)
+            dictionary = str(dict([(str(time), str(value)) for time, value in zip_list]))
+            couples = [['id', 'wind'],
                        ['color', 'hsl(130, 70%, 50%)'],
                        ['data', dictionary]]
             result = json.dumps(couples)
         return result
 
+
+    @app.route('/temperature')
+    def temperatureValues():
+        temperatureList = []
+        tables = query_api.query('from(bucket:"Database") |> range(start: -200m)')
+        for table in tables:
+            for row in table.records:
+                if str(row.values['_measurement']) == "temperature":
+                    temperatureList.append(row.values)
+        result = ''
+        if temperatureList.__len__() != 0:
+            value_list = []
+            time_list = []
+            for list in temperatureList:
+                value_list.append(list['_value'])
+                time_list.append(list['_time'])
+            zip_list = zip(value_list, time_list)
+            dictionary = [{'x' : str(value), 'y' : str(time)} for time, value in zip_list]
+            couples = {'id' :'temperature', 'color': 'hsl(130, 70%, 50%)', 'data': dictionary}
+            result = json.dumps(couples)
+        return result
 
     @app.route('/currentValues')
     def currentValues():
@@ -97,7 +163,6 @@ def create_app(test_config=None):
             result += name_list[counter] + ' ' + str(l[n - 1]['_value']) + ' ' + str(l[n - 1]['_time']) + '\n'
             counter += 1
         return result
-
     return app
 
 

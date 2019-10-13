@@ -6,7 +6,7 @@ bucket = "Database"
 client = InfluxDBClient(url="https://us-west-2-1.aws.cloud2.influxdata.com", token="Jj1BNzx75RudUoWlu8zuK8GNg5JoTpS5m-u0E-HeMKWvOnUzNa_0ZvO0JMxgSaYNqEQ1LJEZnVL1a1E-Rzg85w==", org="cchack")
 query_api = client.query_api()
 humidityList = []
-tables = query_api.query('from(bucket:"Database") |> range(start: -180m)')
+tables = query_api.query('from(bucket:"Database") |> range(start: -300m)')
 
 for table in tables:
     #print(table)
