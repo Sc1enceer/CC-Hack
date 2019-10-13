@@ -2,10 +2,19 @@ import os
 from flask import Flask
 from influxdb_client import InfluxDBClient, Point, WriteOptions
 from influxdb_client.client.write_api import SYNCHRONOUS
+import json
 
 bucket = "Database"
-client = InfluxDBClient(url="http://localhost:9999", token="_OE7L3Ayc6ZXEIC8Yva9SllcihnaqANWdH2NAEHRy3mO4P6cfg3WIvSUMDtYWhz_COsATmhhdbHsFBGsw4CG5g==", org="cchack")
+client = InfluxDBClient(url="https://us-west-2-1.aws.cloud2.influxdata.com", token="Jj1BNzx75RudUoWlu8zuK8GNg5JoTpS5m-u0E-HeMKWvOnUzNa_0ZvO0JMxgSaYNqEQ1LJEZnVL1a1E-Rzg85w==", org="cchack")
 query_api = client.query_api()
+
+
+name_list = ['humidity', 'temperature', 'sunlight', 'wind']
+temperatureList = []
+humidityList = []
+sunlightList = []
+windList = []
+list = [humidityList, temperatureList, sunlightList, windList]
 
 def create_app(test_config=None):
     # create and configure the app
@@ -28,16 +37,70 @@ def create_app(test_config=None):
     except OSError:
         pass
 
+    # @app.route('/hello')
+    # def hello():
+    #     a = ""
+    #     tables = query_api.query('from(bucket:"Database") |> range(start: -60m)')
+    #     for table in tables:
+    #         for row in table.records:
+    #             a += (str(row.values['_value']) + ' ')
+    #     return a
 
 
-    # data analysis
-    @app.route('/hello')
-    def hello():
-        a = ""
-        tables = query_api.query('from(bucket:"Testing") |> range(start: -10m)')
+    @app.route('/humidity')
+    def humidityValues():
+        humidityList = []
+        tables = query_api.query('from(bucket:"Database") |> range(start: -200m)')
         for table in tables:
             for row in table.records:
-                a += (str(row.values['_value']) + ' ')
-        return a
+                if str(row.values['_measurement']) == "humidity":
+                    humidityList.append(row.values)
+        result = ''
+        if humidityList.__len__() != 0:
+            value_list = []
+            time_list = []
+            for list in humidityList:
+                value_list.append(list['_value'])
+                time_list.append(list['_time'])
+            zip_list = zip(value_list, time_list)
+            dictionary = str(dict([(str(time), str(value)) for time, value in zip_list]))
+            couples = [['id', 'humidity'],
+                       ['color', 'hsl(130, 70%, 50%)'],
+                       ['data', dictionary]]
+            result = json.dumps(couples)
+        return result
+
+
+    @app.route('/currentValues')
+    def currentValues():
+        tables = query_api.query('from(bucket:"Database") |> range(start: -200m)')
+        for table in tables:
+            # print(table)
+            for row in table.records:
+                if str(row.values['_measurement']) == "humidity":
+                    # print (row.values)
+                    humidityList.append(row.values)
+                elif str(row.values['_measurement']) == "temperature":
+                    temperatureList.append(row.values)
+                elif str(row.values['_measurement']) == "sunlight":
+                    sunlightList.append(row.values)
+                elif str(row.values['_measurement']) == "wind":
+                    windList.append(row.values)
+                else:
+                    print('errors wrong measurement')
+
+        counter = 0
+        result = ''
+
+        for l in list:
+            n = l.__len__()
+            result += name_list[counter] + ' ' + str(l[n - 1]['_value']) + ' ' + str(l[n - 1]['_time']) + '\n'
+            counter += 1
+        return result
 
     return app
+
+
+
+
+
