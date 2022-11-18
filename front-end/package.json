@@ -10,7 +10,7 @@
     "nivo": "^0.31.0",
     "react": "^16.10.2",
     "react-dom": "^16.10.2",
-    "react-scripts": "3.2.0",
+    "react-scripts": "3.4.4",
     "typeface-roboto": "0.0.75"
   },
   "scripts": {
